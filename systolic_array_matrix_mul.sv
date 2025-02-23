@@ -98,3 +98,34 @@ module systolic_array_matrix_mul #(
     end
 
 endmodule
+
+module pe #(
+    parameter DATA_WIDTH = 16
+) (
+    input  logic                  clk,
+    input  logic                  reset,
+    input  logic [DATA_WIDTH-1:0] a_in,    // Input from left
+    input  logic [DATA_WIDTH-1:0] b_in,    // Input from top
+    output logic [DATA_WIDTH-1:0] a_out,   // Output to right
+    output logic [DATA_WIDTH-1:0] b_out,   // Output to bottom
+    output logic [DATA_WIDTH-1:0] c_out    // Accumulated result
+);
+
+    logic [DATA_WIDTH-1:0] c_reg;
+    logic [2*DATA_WIDTH-1:0] product; // Full precision for multiplication
+
+    always_ff @(posedge clk or posedge reset) begin
+        if (reset) begin
+            c_reg <= 0;
+            a_out <= 0;
+            b_out <= 0;
+        end else begin
+            c_reg <= c_reg + (a_in * b_in); // MAC with current inputs
+            a_out <= a_in;                  // Pass A right
+            b_out <= b_in;                  // Pass B down
+        end
+    end
+
+    assign c_out = c_reg;
+
+endmodule
